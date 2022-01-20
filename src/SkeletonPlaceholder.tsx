@@ -1,13 +1,12 @@
 import * as React from "react";
 import {
-  Animated,
   View,
   StyleSheet,
-  Easing,
   ViewStyle,
   Dimensions,
   LayoutRectangle,
 } from "react-native";
+import Animated, {Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from "react-native-reanimated";
 import MaskedView from "@react-native-masked-view/masked-view";
 import LinearGradient from "react-native-linear-gradient";
 
@@ -48,41 +47,25 @@ export default function SkeletonPlaceholder({
   direction = "right",
 }: SkeletonPlaceholderProps): JSX.Element {
   const [layout, setLayout] = React.useState<LayoutRectangle>();
-  const animatedValue = React.useMemo(() => new Animated.Value(0), []);
-  const translateX = React.useMemo(
-    () =>
-      animatedValue.interpolate({
-        inputRange: [0, 1],
-        outputRange:
-          direction === "right"
-            ? [-SCREEN_WIDTH, SCREEN_WIDTH]
-            : [SCREEN_WIDTH, -SCREEN_WIDTH],
-      }),
-    [animatedValue]
-  );
-
+  const animated = useSharedValue(0);
   React.useEffect(() => {
-    if (speed > 0) {
-      const loop = Animated.loop(
-        Animated.timing(animatedValue, {
-          toValue: 1,
-          duration: speed,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        })
-      );
-      if (layout?.width && layout?.height) {
-        loop.start();
-      }
-      return () => loop.stop();
+    animated.value = withRepeat(withTiming(1, {
+      duration: speed,
+      easing: Easing.ease,
+    }), -1);
+  }, []);
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateX = interpolate(animated.value, [0, 1],direction === "right"
+    ? [-SCREEN_WIDTH, SCREEN_WIDTH]
+    : [SCREEN_WIDTH, -SCREEN_WIDTH])
+    return {
+      transform: [
+        {
+          translateX: translateX,
+        }
+      ]
     }
-    return;
-  }, [animatedValue, speed, layout?.width, layout?.height]);
-
-  const absoluteTranslateStyle = React.useMemo(
-    () => ({ ...StyleSheet.absoluteFillObject, transform: [{ translateX }] }),
-    [translateX]
-  );
+  });
   const viewStyle = React.useMemo<ViewStyle>(
     () => ({ backgroundColor, overflow: "hidden" }),
     [backgroundColor]
@@ -139,7 +122,8 @@ export default function SkeletonPlaceholder({
             {
               flexDirection: "row",
             },
-            absoluteTranslateStyle,
+            StyleSheet.absoluteFillObject,
+            animatedStyle
           ]}
         >
           <MaskedView
