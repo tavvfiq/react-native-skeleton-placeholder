@@ -1,6 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder-2';
 
 const SecondExample = ({}) =>
   Array.from({length: 3}).map((_, index) => (

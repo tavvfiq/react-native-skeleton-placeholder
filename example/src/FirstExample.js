@@ -1,5 +1,5 @@
 import React from 'react';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder-2';
 
 const FirstExample = ({}) => (
   <SkeletonPlaceholder>
